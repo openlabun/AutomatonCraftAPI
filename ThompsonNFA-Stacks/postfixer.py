@@ -27,11 +27,11 @@
 # First define the precedence of the operators and the operators themselves
 # The higher the number, the higher the precedence
 precedence = {
-    '|': 1,
+    '|': 3,
     '.': 2,
-    '*': 3,
-    '+': 3,
-    '?': 3,
+    '*': 1,
+    '+': 1,
+    '?': 1,
     '(': 4,
     ')': 4,
 }
@@ -43,6 +43,7 @@ operators = ['|', '.', '*', '+', '?', '(', ')']
 def shunting_yard(infix):
     output = []
     stack = []
+    infix = append_operator(infix)
     for c in infix:
         if c not in operators:
             output.append(c)
@@ -53,9 +54,24 @@ def shunting_yard(infix):
                 output.append(stack.pop())
             stack.pop()
         else:
-            while stack and precedence[stack[-1]] >= precedence[c]:
+            while stack and precedence[stack[-1]] <= precedence[c]:
                 output.append(stack.pop())
             stack.append(c)
     while stack:
         output.append(stack.pop())
     return output
+
+# Add the concatenation operator to the infix expression
+def append_operator(infix):
+    result = []
+    for i, c in enumerate(infix):
+        result.append(c)
+        if c == '(' or c == '|':
+            continue
+        if i + 1 < len(infix):
+            lookahead = infix[i + 1]
+            if lookahead == ')' or lookahead == '|' or lookahead == '*' or lookahead == '+' or lookahead == '?':
+                continue
+            result.append('.')
+        
+    return result

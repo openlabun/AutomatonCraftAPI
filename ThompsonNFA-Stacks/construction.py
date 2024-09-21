@@ -42,3 +42,33 @@
 #            5. Push the new fragment onto the stack.
 #3. The resulting NFA is the only fragment left on the stack.
 #4. Return the resulting NFA.
+
+from nfa import basic_nfa, union_nfa, concat_nfa, kleene_nfa, positive_nfa, optional_nfa
+
+def thompson(postfix):
+    stack = []
+    for c in postfix:
+        if c.isalpha():
+            nfa = basic_nfa(object(),object())
+            nfa.add_transition(nfa.initial, c, nfa.accept)
+            stack.append(nfa)
+        elif c == '|':
+            nfa2 = stack.pop()
+            nfa1 = stack.pop()
+            stack.append(union_nfa(nfa1, nfa2))
+        elif c == '.':
+            nfa2 = stack.pop()
+            nfa1 = stack.pop()
+            stack.append(concat_nfa(nfa1, nfa2))
+        elif c == '*':
+            nfa = stack.pop()
+            stack.append(kleene_nfa(nfa))
+        elif c == '+':
+            nfa = stack.pop()
+            stack.append(positive_nfa(nfa))
+        elif c == '?':
+            nfa = stack.pop()
+            stack.append(optional_nfa(nfa))
+    return stack[0]
+
+# Example usage
