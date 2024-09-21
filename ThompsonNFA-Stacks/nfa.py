@@ -93,6 +93,12 @@ class NFA:
     def print_transition_table(self):
         for state, transitions in self.build_transition_table().items():
             print(f"State {state}: {transitions}")
+    
+    def get_transitions_by_state(self,state):
+        for (s, symbol), next_states in self.transitions.items():
+            if s == state:
+                return symbol, next_states
+        return None  # Si no se encuentra el estado
 
 
 
@@ -126,9 +132,14 @@ def union_nfa(nfa1, nfa2):
 
 # Rule #4: Concatenation expression
 def concat_nfa(nfa1, nfa2):
+    symbolns2,next_states2 = nfa2.get_transitions_by_state(nfa2.initial)
+    for next_state in next_states2:
+        nfa1.add_transition(nfa1.accept, symbolns2, next_state)
+
     for (state, symbol), next_states in nfa2.transitions.items():
-        nfa1.add_transition(state, symbol, next_states)
-    nfa1.add_transition(nfa1.accept, "e", nfa2.initial)
+        #Only if the state is not the initial state
+        if state != nfa2.initial:
+            nfa1.add_transition(state, symbol, next_states)
     nfa1.accept = nfa2.accept
     return nfa1
 
