@@ -1,4 +1,5 @@
 from collections import deque
+import json
 
 # Define the NFA class
 class NFA:
@@ -93,14 +94,91 @@ class NFA:
     def print_transition_table(self):
         for state, transitions in self.build_transition_table().items():
             print(f"State {state}: {transitions}")
+
+    def get_transition_table(self):
+        # Inicializar un diccionario para la tabla de transiciones
+        transition_table_json = {}
+        
+        # Construir el diccionario para JSON
+        for current_state, transitions in self.build_transition_table().items():
+            transition_table_json[current_state] = {}
+            for symbol, next_states in transitions.items():
+                transition_table_json[current_state][symbol] = next_states
+
+        # Convertir el diccionario a JSON
+        return transition_table_json
+            
     
     def get_transitions_by_state(self,state):
+        if state == self.accept:
+            return None, self.accept
         for (s, symbol), next_states in self.transitions.items():
             if s == state:
                 return symbol, next_states
         return None  # Si no se encuentra el estado
 
 
+def mueve(string, state, nfa, path=None, all_paths=None):
+    if path is None:
+        path = []  # Inicializar el camino
+
+    if all_paths is None:
+        all_paths = []  # Inicializar la lista de todos los caminos
+
+    # Agregar el estado actual al camino
+    path.append(state)
+
+    # Si el estado actual es el estado de aceptación y la cadena está vacía
+    if state == nfa.accept and not string:
+        all_paths.append((path.copy(), True))  # Añadir camino aceptado
+        return all_paths
+    
+    # Obtener el símbolo y los próximos estados desde la transición actual
+    transition = nfa.get_transitions_by_state(state)
+    if transition is None:
+        print("No hay transición desde el estado actual.")
+        all_paths.append((path.copy(), False))  # Añadir camino no aceptado
+        return all_paths
+
+    symbol, next_states = transition
+    
+    # Procesar transiciones epsilon (símbolo "&")
+    if symbol == "&":
+        for next_state in next_states:
+            if isinstance(next_state, list):
+                next_state = next_state[0]
+            # Hacer una llamada recursiva sin consumir el símbolo
+            all_paths = mueve(string[:], next_state, nfa, path.copy(), all_paths)  # Copia el camino
+    
+    # Procesar transiciones normales, coincidiendo el símbolo
+    elif string and string[0] == symbol:
+        for next_state in next_states:
+            if isinstance(next_state, list):
+                next_state = next_state[0]
+            # Consumir el símbolo y moverse al siguiente estado
+            new_string = string.copy()  # Copia la cadena
+            new_string.pop(0)
+            all_paths = mueve(new_string, next_state, nfa, path.copy(), all_paths)  # Avanzar en la cadena
+    
+    # Si no hay coincidencias o transiciones
+    if string or symbol != "&":
+        all_paths.append((path.copy(), False))  # Añadir camino no aceptado solo al final
+    return all_paths  # Retornar todos los caminos
+
+def evaluate_string(string, nfa):
+    caminos = mueve(string, nfa.initial, nfa)
+    state_to_number = nfa.ennunmerate_states()
+    print("Todos los caminos:")
+    for camino, aceptado in caminos:
+        camino = [state_to_number[state] for state in camino]
+        print(f"Caminos: {camino}, Aceptado: {aceptado}")
+    
+    #ToJSON
+    json_caminos = []
+    for camino, aceptado in caminos:
+        camino = [state_to_number[state] for state in camino]
+        json_caminos.append({"camino": camino, "aceptado": aceptado})
+    return json.dumps(json_caminos)
 
 
 
@@ -124,10 +202,10 @@ def union_nfa(nfa1, nfa2):
         nfa.add_transition(state, symbol, next_states)
     for (state, symbol), next_states in nfa2.transitions.items():
         nfa.add_transition(state, symbol, next_states)
-    nfa.add_transition(initial, "e", nfa1.initial)
-    nfa.add_transition(initial, "e", nfa2.initial)
-    nfa.add_transition(nfa1.accept, "e", accept)
-    nfa.add_transition(nfa2.accept, "e", accept)
+    nfa.add_transition(initial, "&", nfa1.initial)
+    nfa.add_transition(initial, "&", nfa2.initial)
+    nfa.add_transition(nfa1.accept, "&", accept)
+    nfa.add_transition(nfa2.accept, "&", accept)
     return nfa
 
 # Rule #4: Concatenation expression
@@ -147,10 +225,10 @@ def concat_nfa(nfa1, nfa2):
 def kleene_nfa(nfa):
     initial = object()
     accept = object()
-    nfa.add_transition(initial, "e", accept)
-    nfa.add_transition(initial, "e", nfa.initial)
-    nfa.add_transition(nfa.accept, "e", nfa.initial)
-    nfa.add_transition(nfa.accept, "e", accept)
+    nfa.add_transition(initial, "&", accept)
+    nfa.add_transition(initial, "&", nfa.initial)
+    nfa.add_transition(nfa.accept, "&", nfa.initial)
+    nfa.add_transition(nfa.accept, "&", accept)
     nfa.initial = initial
     nfa.accept = accept
     return nfa
@@ -159,9 +237,9 @@ def kleene_nfa(nfa):
 def positive_nfa(nfa):
     initial = object()
     accept = object()
-    nfa.add_transition(initial, "e", nfa.initial)
-    nfa.add_transition(nfa.accept, "e", accept)
-    nfa.add_transition(nfa.accept, "e", nfa.initial)
+    nfa.add_transition(initial, "&", nfa.initial)
+    nfa.add_transition(nfa.accept, "&", accept)
+    nfa.add_transition(nfa.accept, "&", nfa.initial)
     nfa.initial = initial
     nfa.accept = accept
     return nfa
@@ -170,8 +248,8 @@ def positive_nfa(nfa):
 def optional_nfa(nfa):
     initial = object()
     accept = object()
-    nfa.add_transition(initial, "e", nfa.initial)
-    nfa.add_transition(nfa.accept, "e", accept)
+    nfa.add_transition(initial, "&", nfa.initial)
+    nfa.add_transition(nfa.accept, "&", accept)
     nfa.initial = initial
     nfa.accept = accept
 

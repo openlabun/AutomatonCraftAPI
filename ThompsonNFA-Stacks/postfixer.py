@@ -27,11 +27,11 @@
 # First define the precedence of the operators and the operators themselves
 # The higher the number, the higher the precedence
 precedence = {
-    '|': 3,
-    '.': 2,
     '*': 1,
     '+': 1,
     '?': 1,
+    '.': 2,
+    '|': 3,
     '(': 4,
     ')': 4,
 }
@@ -42,6 +42,7 @@ operators = ['|', '.', '*', '+', '?', '(', ')']
 # Define the shunting yard algorithm
 def shunting_yard(infix):
     output = []
+    symbols = []
     stack = []
     infix = append_operator(infix)
     for c in infix:
@@ -55,11 +56,13 @@ def shunting_yard(infix):
             stack.pop()
         else:
             while stack and precedence[stack[-1]] <= precedence[c]:
-                output.append(stack.pop())
+                currentC = stack.pop()
+                output.append(currentC)
+                symbols.append(currentC)
             stack.append(c)
     while stack:
         output.append(stack.pop())
-    return output
+    return output, symbols
 
 # Add the concatenation operator to the infix expression
 def append_operator(infix):
