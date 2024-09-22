@@ -10,4 +10,5 @@ if __name__ == "__main__":
     nfa.print_transition_table()
     print(nfa.get_transition_table())
     string = list(input('Enter string to evaluate: '))
-    print(evaluate_string(string,nfa))
+    paths, status = evaluate_string(string,nfa)
+    print(status)

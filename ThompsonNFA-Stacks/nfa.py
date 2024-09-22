@@ -169,7 +169,10 @@ def evaluate_string(string, nfa):
     caminos = mueve(string, nfa.initial, nfa)
     state_to_number = nfa.ennunmerate_states()
     print("Todos los caminos:")
+    status = "Rechazada"
     for camino, aceptado in caminos:
+        if aceptado:
+            status = "Aceptada"
         camino = [state_to_number[state] for state in camino]
         print(f"Caminos: {camino}, Aceptado: {aceptado}")
     
@@ -178,7 +181,7 @@ def evaluate_string(string, nfa):
     for camino, aceptado in caminos:
         camino = [state_to_number[state] for state in camino]
         json_caminos.append({"camino": camino, "aceptado": aceptado})
-    return json.dumps(json_caminos)
+    return json.dumps(json_caminos), status
 
 
 
