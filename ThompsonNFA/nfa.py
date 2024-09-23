@@ -7,6 +7,9 @@ class NFA:
         self.initial = initial
         self.accept = accept
         self.transitions = {}
+        self.state_to_number = None
+        self.transition_table = None
+        self.alphabet = set()
 
     def add_transition(self, state, symbol, next_state):
         if (state, symbol) not in self.transitions:
@@ -56,12 +59,12 @@ class NFA:
     
     def build_transition_table(self):
         # Obtener la enumeración de los estados
-        state_to_number = self.ennunmerate_states()
+        self.state_to_number = self.ennunmerate_states()
         # Inicializar la tabla de transición
         transition_table = {}
         
         for (state, symbol), next_states in self.transitions.items():
-            current_state_num =state_to_number.get(state)
+            current_state_num = self.state_to_number.get(state)
             
             if current_state_num not in transition_table:
                 transition_table[current_state_num] = {}
@@ -70,7 +73,7 @@ class NFA:
                 # Verificamos si next_state es una lista y manejamos cada uno
                 if isinstance(next_state, list):
                     for sub_state in next_state:
-                        next_state_num =state_to_number.get(sub_state)
+                        next_state_num = self.state_to_number.get(sub_state)
                         if symbol in transition_table[current_state_num]:
                             # Si ya existe la entrada para este símbolo, agregamos el estado a la lista
                             if next_state_num not in transition_table[current_state_num][symbol]:
@@ -79,7 +82,7 @@ class NFA:
                             # Si no existe la entrada, inicializamos la lista
                             transition_table[current_state_num][symbol] = [next_state_num]
                 else:
-                    next_state_num =state_to_number.get(next_state)
+                    next_state_num = self.state_to_number.get(next_state)
                     if symbol in transition_table[current_state_num]:
                         # Si ya existe la entrada para este símbolo, agregamos el estado a la lista
                         if next_state_num not in transition_table[current_state_num][symbol]:
@@ -87,12 +90,12 @@ class NFA:
                     else:
                         # Si no existe la entrada, inicializamos la lista
                         transition_table[current_state_num][symbol] = [next_state_num]
-        return transition_table
+        self.transition_table = transition_table
 
     
     # Print the transition table
     def print_transition_table(self):
-        for state, transitions in self.build_transition_table().items():
+        for state, transitions in self.transition_table.items():
             print(f"State {state}: {transitions}")
 
     def get_transition_table(self):
@@ -100,7 +103,7 @@ class NFA:
         transition_table_json = {}
         
         # Construir el diccionario para JSON
-        for current_state, transitions in self.build_transition_table().items():
+        for current_state, transitions in self.transition_table.items():
             transition_table_json[current_state] = {}
             for symbol, next_states in transitions.items():
                 transition_table_json[current_state][symbol] = next_states
@@ -116,9 +119,15 @@ class NFA:
             if s == state:
                 return symbol, next_states
         return None  # Si no se encuentra el estado
+    
+    # From number to state
+    def get_state_by_number(self, number):
+        for state, num in self.state_to_number.items():
+            if num == number:
+                return state
+        return None
 
-
-def mueve(string, state, nfa, path=None, all_paths=None):
+def route(string, state, nfa, path=None, all_paths=None):
     if path is None:
         path = []  # Inicializar el camino
 
@@ -148,7 +157,7 @@ def mueve(string, state, nfa, path=None, all_paths=None):
             if isinstance(next_state, list):
                 next_state = next_state[0]
             # Hacer una llamada recursiva sin consumir el símbolo
-            all_paths = mueve(string[:], next_state, nfa, path.copy(), all_paths)  # Copia el camino
+            all_paths = route(string[:], next_state, nfa, path.copy(), all_paths)  # Copia el camino
     
     # Procesar transiciones normales, coincidiendo el símbolo
     elif string and string[0] == symbol:
@@ -158,7 +167,7 @@ def mueve(string, state, nfa, path=None, all_paths=None):
             # Consumir el símbolo y moverse al siguiente estado
             new_string = string.copy()  # Copia la cadena
             new_string.pop(0)
-            all_paths = mueve(new_string, next_state, nfa, path.copy(), all_paths)  # Avanzar en la cadena
+            all_paths = route(new_string, next_state, nfa, path.copy(), all_paths)  # Avanzar en la cadena
     
     # Si no hay coincidencias o transiciones
     if string or symbol != "&":
@@ -166,8 +175,8 @@ def mueve(string, state, nfa, path=None, all_paths=None):
     return all_paths  # Retornar todos los caminos
 
 def evaluate_string(string, nfa):
-    caminos = mueve(string, nfa.initial, nfa)
-    state_to_number = nfa.ennunmerate_states()
+    caminos = route(string, nfa.initial, nfa)
+    state_to_number = nfa.state_to_number
     print("Todos los caminos:")
     status = "Rechazada"
     for camino, aceptado in caminos:

@@ -43,7 +43,7 @@
 #3. The resulting NFA is the only fragment left on the stack.
 #4. Return the resulting NFA.
 
-from nfa import basic_nfa, union_nfa, concat_nfa, kleene_nfa, positive_nfa, optional_nfa
+from ThompsonNFA.nfa import basic_nfa, union_nfa, concat_nfa, kleene_nfa, positive_nfa, optional_nfa
 
 def thompson(postfix):
     stack = []

@@ -48,6 +48,7 @@ def shunting_yard(infix):
     for c in infix:
         if c not in operators:
             output.append(c)
+            if c not in symbols: symbols.append(c)
         elif c == '(':
             stack.append(c)
         elif c == ')':
@@ -58,7 +59,6 @@ def shunting_yard(infix):
             while stack and precedence[stack[-1]] <= precedence[c]:
                 currentC = stack.pop()
                 output.append(currentC)
-                symbols.append(currentC)
             stack.append(c)
     while stack:
         output.append(stack.pop())
