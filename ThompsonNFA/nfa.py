@@ -62,6 +62,8 @@ class NFA:
         self.state_to_number = self.ennunmerate_states()
         # Inicializar la tabla de transición
         transition_table = {}
+        initial_state_num = self.state_to_number.get(self.initial)
+        accept_state_num = self.state_to_number.get(self.accept)
         
         for (state, symbol), next_states in self.transitions.items():
             current_state_num = self.state_to_number.get(state)
@@ -91,6 +93,7 @@ class NFA:
                         # Si no existe la entrada, inicializamos la lista
                         transition_table[current_state_num][symbol] = [next_state_num]
         self.transition_table = transition_table
+        return initial_state_num, accept_state_num
 
     
     # Print the transition table
@@ -150,14 +153,15 @@ def route(string, state, nfa, path=None, all_paths=None):
         return all_paths
 
     symbol, next_states = transition
-    
+    print(f"Estado actual: {state}, Símbolo: {symbol}, Próximos estados: {next_states}")
     # Procesar transiciones epsilon (símbolo "&")
     if symbol == "&":
         for next_state in next_states:
             if isinstance(next_state, list):
-                next_state = next_state[0]
-            # Hacer una llamada recursiva sin consumir el símbolo
-            all_paths = route(string[:], next_state, nfa, path.copy(), all_paths)  # Copia el camino
+                for state in next_state:
+                    all_paths = route(string[:], state, nfa, path.copy(), all_paths)  # Copia el camino
+            else:
+                all_paths = route(string[:], next_state, nfa, path.copy(), all_paths)  # Copia el camino
     
     # Procesar transiciones normales, coincidiendo el símbolo
     elif string and string[0] == symbol:
