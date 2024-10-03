@@ -55,6 +55,7 @@ def subset_construction(nfa):
     EstadosD = []  # Conjunto de estados DFA
     TranD = {}     # Transiciones DFA como diccionario
     Subconjuntos = {}  # Para almacenar los subconjuntos de cada estado
+    SubconjuntosEstadosSignificativos = {}  # Para almacenar los subconjuntos de estados significativos de cada estado 
 
     # Agregamos la cerradura epsilon del estado inicial del NFA
     initial_closure = tuple(clousureE(nfa.initial, nfa))  # Convertimos a tupla para usarlo en comparaciones
@@ -72,14 +73,24 @@ def subset_construction(nfa):
         
         # Asignar un label a T si no tiene uno
         if T not in state_labels:
-            state_labels[T] = chr(65 + label_counter)  # 65 es el código ASCII para 'A'
+            state_labels[T] = chr(65 + label_counter) + '->'  # 65 es el código ASCII para 'A'
             label_counter += 1
+        
+        TSignificativos = []
+        for state in T:
+            if move([(state)], '&', nfa):
+                pass
+            else:
+                TSignificativos.append(state)
         
         # Guardar el subconjunto correspondiente al estado
         Subconjuntos[state_labels[T]] = T
+        SubconjuntosEstadosSignificativos[state_labels[T]] = TSignificativos
+        
 
         for a in nfa.alphabet:  # Iteramos sobre el alfabeto del NFA
             U = tuple(setClousureE(move(T, a, nfa), nfa))  # Calculamos la cerradura epsilon del conjunto U
+
             
             # Si el conjunto U no es vacío y no está en EstadosD, lo agregamos
             if U and U not in EstadosD:
@@ -89,12 +100,16 @@ def subset_construction(nfa):
                 # Asignar un label a U si no tiene uno
                 state_labels[U] = chr(65 + label_counter)  # 65 es 'A'
                 label_counter += 1
+
+                #Marcar el estado si es final con un *
+                if nfa.accept in U:
+                    state_labels[U] = state_labels[U] + '*'
             
             # Agregamos la transición al DFA
             if U:
                 TranD[(state_labels[T], a)] = state_labels.get(U, None)
 
-    return EstadosD, TranD, Subconjuntos
+    return EstadosD, TranD, Subconjuntos, SubconjuntosEstadosSignificativos
 
 
             
