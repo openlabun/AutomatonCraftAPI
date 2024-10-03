@@ -20,7 +20,7 @@ def testSubSetMethod(nfa):
     for label, estados in SubconjuntosEstadosSignificativos.items():
         translated_states = [nfa.state_to_number.get(state, -1) for state in estados]
         translated_subconjuntos2[label] = translated_states
-    print("Subconjuntos traducidos:", translated_subconjuntos2)
+    print("Subconjuntos conjunto de estados significativos:", translated_subconjuntos2)
     return TranD, translated_subconjuntos, translated_subconjuntos2
 
 def testSignificatStateMethod(TranD, translated_subconjuntos):
