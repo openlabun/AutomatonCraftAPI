@@ -43,7 +43,6 @@ class NFA:
                 if state == current_state:  # Si la transición parte del estado actual
                     # Iteramos sobre los estados de destino (next_states puede ser una lista)
                     for next_state in next_states:
-                        print(next_state)
                         # Verificar si el next_state es una lista y recorrerla si es el caso
                         while isinstance(next_state, list):
                             next_state = next_state[0]
