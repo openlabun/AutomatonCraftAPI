@@ -39,30 +39,56 @@ precedence = {
 # Define the operators
 operators = ['|', '.', '*', '+', '?', '(', ')']
 
-# Define the shunting yard algorithm
+# Define the shunting yard algorithm with parentheses validation
 def shunting_yard(infix):
     output = []
     symbols = []
     stack = []
     infix = append_operator(infix)
+    
+    # Contadores de paréntesis para validación
+    open_paren_count = 0
+    close_paren_count = 0
+
     for c in infix:
         if c not in operators:
             output.append(c)
-            if c not in symbols: symbols.append(c)
+            if c not in symbols: 
+                symbols.append(c)
         elif c == '(':
             stack.append(c)
+            open_paren_count += 1  # Incrementa cuando encontramos '('
         elif c == ')':
+            close_paren_count += 1  # Incrementa cuando encontramos ')'
+            # Si hay más paréntesis de cierre que de apertura, hay un error
+            if close_paren_count > open_paren_count:
+                raise ValueError("Error: Paréntesis de cierre no tiene correspondiente paréntesis de apertura")
+            
             while stack and stack[-1] != '(':
                 output.append(stack.pop())
-            stack.pop()
+            if stack and stack[-1] == '(':
+                stack.pop()  # Elimina el paréntesis de apertura correspondiente
         else:
+            # Comprobamos la precedencia de operadores
             while stack and precedence[stack[-1]] <= precedence[c]:
                 currentC = stack.pop()
                 output.append(currentC)
             stack.append(c)
+    
+    # Si hay más paréntesis de apertura que de cierre al final, hay un error
+    if open_paren_count != close_paren_count:
+        raise ValueError("Error: Paréntesis de apertura no tiene correspondiente paréntesis de cierre")
+    
+    # Vacía el stack restante
     while stack:
-        output.append(stack.pop())
+        currentC = stack.pop()
+        # Si encontramos un paréntesis de apertura en el stack al final, es un error
+        if currentC == '(':
+            raise ValueError("Error: Paréntesis de apertura no tiene correspondiente paréntesis de cierre")
+        output.append(currentC)
+
     return output, symbols
+
 
 # Add the concatenation operator to the infix expression
 def append_operator(infix):

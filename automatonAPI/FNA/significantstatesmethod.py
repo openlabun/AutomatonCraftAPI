@@ -1,4 +1,6 @@
-def afdOptimization(TranD, translated_subconjuntos):
+from ThompsonNFA.nfa import evaluate_string_dfa
+
+def afdOptimization(TranD, translated_subconjuntos,dfa):
     # Optimización del DFA
     # Se eliminan los estados equivalentes
 
@@ -10,14 +12,24 @@ def afdOptimization(TranD, translated_subconjuntos):
                 if (label2, label1) not in equivalent_states:
                     equivalent_states.append((label1, label2))
 
-    # Eliminar los estados equivalentes del DFA en la TranD
+    # Eliminar los estados equivalentes del DFA en la TranD y en el dfa
     todelete = []
+    todeletedfa = []
     for label1, label2 in equivalent_states:
         for key, value in TranD.items():
             if value == label2:
                 TranD[key] = label1
             if key[0] == label2:
                 todelete.append(key)
+        for key, value in dfa.transitions.items():
+            if value == label2:
+                dfa.transitions[key] = label1
+            if key[0] == label2:
+                todeletedfa.append(key)
     for key in todelete:
         del TranD[key]
-    return TranD
+    for key in todeletedfa:
+        del dfa.transitions[key]
+
+
+    return TranD, dfa

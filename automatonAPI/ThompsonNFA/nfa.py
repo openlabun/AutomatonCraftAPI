@@ -15,6 +15,12 @@ class NFA:
         if (state, symbol) not in self.transitions:
             self.transitions[(state, symbol)] = []
         self.transitions[(state, symbol)].append(next_state)
+    
+    def set_initial(self, initial):
+        self.initial = initial
+
+    def set_accept(self, accept):
+        self.accept = accept
 
     def ennunmerate_states(self):
         # Diccionario para almacenar el número asignado a cada estado
@@ -195,6 +201,34 @@ def evaluate_string(string, nfa):
         camino = [state_to_number[state] for state in camino]
         json_caminos.append({"camino": camino, "aceptado": aceptado})
     return json.dumps(json_caminos), status
+
+def evaluate_string_dfa(input_string, dfa):
+    transitions = dfa.transitions
+    # Definir el estado inicial
+    current_states = ['A->']  # Aquí se asume que 'A->' es el estado inicial
+    path = []  # Para almacenar el camino recorrido
+
+    for symbol in input_string:
+        next_states = []  # Lista para almacenar los próximos estados
+
+        for state in current_states:
+            # Obtener las transiciones para el estado actual y el símbolo
+            for (state_key, transition_symbol), next_state_list in transitions.items():
+                if state_key == state and transition_symbol == symbol:
+                    next_states.extend(next_state_list)
+                    path.append((state, transition_symbol, next_state_list))  # Almacenar el camino
+
+        current_states = next_states  # Actualizar los estados actuales
+
+        # Si no hay estados alcanzables, la cadena no es válida
+        if not current_states:
+            return False, path
+
+    # Verificar si alguno de los estados actuales es un estado de aceptación
+    is_accepted = any(state.endswith('*') for state in current_states)
+    return  path, is_accepted
+        
+
 
 
 
