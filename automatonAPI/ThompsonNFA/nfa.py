@@ -43,7 +43,10 @@ class NFA:
                 if state == current_state:  # Si la transición parte del estado actual
                     # Iteramos sobre los estados de destino (next_states puede ser una lista)
                     for next_state in next_states:
+                        print(next_state)
                         # Verificar si el next_state es una lista y recorrerla si es el caso
+                        while isinstance(next_state, list):
+                            next_state = next_state[0]
                         if isinstance(next_state, list):
                             for state in next_state:
                                 if state not in state_to_number:
@@ -79,6 +82,8 @@ class NFA:
 
             for next_state in next_states:
                 # Verificamos si next_state es una lista y manejamos cada uno
+                while isinstance(next_state, list):
+                            next_state = next_state[0]
                 if isinstance(next_state, list):
                     for sub_state in next_state:
                         next_state_num = self.state_to_number.get(sub_state)
