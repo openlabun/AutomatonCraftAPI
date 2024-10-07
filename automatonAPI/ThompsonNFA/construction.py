@@ -48,11 +48,8 @@ from ThompsonNFA.nfa import basic_nfa, union_nfa, concat_nfa, kleene_nfa, positi
 def thompson(postfix):
     stack = []
     for c in postfix:
-        if c.isalpha() or c.isdigit():
-            nfa = basic_nfa(object(),object())
-            nfa.add_transition(nfa.initial, c, nfa.accept)
-            stack.append(nfa)
-        elif c == '|':
+        print(c)
+        if c == '|':
             nfa2 = stack.pop()
             nfa1 = stack.pop()
             stack.append(union_nfa(nfa1, nfa2))
@@ -69,6 +66,10 @@ def thompson(postfix):
         elif c == '?':
             nfa = stack.pop()
             stack.append(optional_nfa(nfa))
+        else:
+            nfa = basic_nfa(object(),object())
+            nfa.add_transition(nfa.initial, c, nfa.accept)
+            stack.append(nfa)
     return stack[0]
 
 # Example usage
