@@ -109,7 +109,9 @@ class BuildThompsonNFA(APIView):
                 schema=openapi.Schema(
                     type=openapi.TYPE_OBJECT,
                     properties={
-                        'nfa': openapi.Schema(type=openapi.TYPE_OBJECT, description='NFA representation.'),
+                        'transition_table': openapi.Schema(type=openapi.TYPE_OBJECT, description='Transition table of the NFA.'),
+                        'initial_state': openapi.Schema(type=openapi.TYPE_STRING, description='Initial state of the NFA.'),
+                        'accept_states': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Items(type=openapi.TYPE_STRING), description='Accept states of the NFA.')
                     }
                 )
             ),
@@ -221,8 +223,6 @@ class OptimizeDFA(APIView):
         response, nfa = thompsonfunct(postfix, symbols)
         response, TranD, States, StatesS, dfa, estadosA, estadosI = subsetfunct(nfa)
         try:
-            print(estadosA)
-            print(estadosI)
             TranD, AFD, initial, accept = afdOptimization(TranD, StatesS,dfa, estadosI, estadosA)
             global optimizeddfa
             optimizeddfa = AFD
