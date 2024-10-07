@@ -54,7 +54,10 @@ def move(T, a, nfa):
             if current_state == state and symbol == a:
                 # Si el símbolo coincide con 'a', añadimos los estados alcanzables al conjunto
                 for next_state in next_states:
+                    
                     if isinstance(next_state, list):
+                        while isinstance(next_state[0], list):
+                            next_state = next_state[0]
                         move_set.update(next_state)  # Si next_state es una lista, añadimos sus elementos
                     else:
                         move_set.add(next_state)  # Si es un estado individual, lo añadimos directamente
