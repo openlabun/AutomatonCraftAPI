@@ -329,6 +329,7 @@ def optional_nfa(nfa):
     accept = object()
     nfa.add_transition(initial, "&", nfa.initial)
     nfa.add_transition(nfa.accept, "&", accept)
+    nfa.add_transition(initial, "&", accept)
     nfa.initial = initial
     nfa.accept = accept
     return nfa
