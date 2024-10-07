@@ -134,6 +134,10 @@ def subset_construction(nfa):
     dfa = NFA(initial,accept)
     for key, value in TranD.items():
         if value:
+            if isinstance(value, list):
+                if isinstance(value[0], list):
+                    while isinstance(value[0], list):
+                        value = value[0]
             dfa.add_transition(key[0], key[1], value)
 
     
