@@ -22,6 +22,9 @@ class NFA:
     def set_accept(self, accept):
         self.accept = accept
 
+    def set_transitions(self, transitions):
+        self.transitions = transitions
+
     def ennunmerate_states(self):
         # Diccionario para almacenar el número asignado a cada estado
         state_to_number = {}
@@ -130,7 +133,7 @@ class NFA:
         for (s, symbol), next_states in self.transitions.items():
             if s == state:
                 return symbol, next_states
-        return None  # Si no se encuentra el estado
+        return None, []  # Si no se encuentra el estado
     
     # From number to state
     def get_state_by_number(self, number):
@@ -162,6 +165,9 @@ def route(string, state, nfa, path=None, all_paths=None):
         return all_paths
 
     symbol, next_states = transition
+    if isinstance(next_states, list):
+        while isinstance(next_states[0], list):
+            next_states = next_states[0]
     print(f"Estado actual: {state}, Símbolo: {symbol}, Próximos estados: {next_states}")
     # Procesar transiciones epsilon (símbolo "&")
     if symbol == "&":
@@ -187,28 +193,48 @@ def route(string, state, nfa, path=None, all_paths=None):
         all_paths.append((path.copy(), False))  # Añadir camino no aceptado solo al final
     return all_paths  # Retornar todos los caminos
 
+
+
 def evaluate_string(string, nfa):
     caminos = route(string, nfa.initial, nfa)
     state_to_number = nfa.state_to_number
-    print("Todos los caminos:")
     status = "Rechazada"
+    caminoA=[]
     for camino, aceptado in caminos:
         if aceptado:
             status = "Aceptada"
-        camino = [state_to_number[state] for state in camino]
-        print(f"Caminos: {camino}, Aceptado: {aceptado}")
+        caminoA=[]
+        for state in camino:
+            if isinstance(state, list):
+                while isinstance(state[0], list):
+                    state = state[0]
+                caminoA.append(state_to_number[state[0]])
+            else:
+                caminoA.append(state_to_number[state])
+        print(f"Camino: {caminoA}, Aceptado: {aceptado}")
+        camino = [state for state in caminoA]
     
     #ToJSON
     json_caminos = []
+    caminoB = []
     for camino, aceptado in caminos:
-        camino = [state_to_number[state] for state in camino]
+        caminoB = []
+        for state in camino:
+            if isinstance(state, list):
+                while isinstance(state[0], list):
+                    state = state[0]
+                caminoB.append(state_to_number[state[0]])
+            else:
+                caminoB.append(state_to_number[state])
+        camino = [state for state in caminoB]
         json_caminos.append({"camino": camino, "aceptado": aceptado})
-    return json.dumps(json_caminos), status
+    
+    return json_caminos, status
 
 def evaluate_string_dfa(input_string, dfa):
     transitions = dfa.transitions
     # Definir el estado inicial
-    current_states = ['A->']  # Aquí se asume que 'A->' es el estado inicial
+    current_states = ['A']  # Aquí se asume que 'A' es el estado inicial
     path = []  # Para almacenar el camino recorrido
 
     for symbol in input_string:
@@ -225,10 +251,10 @@ def evaluate_string_dfa(input_string, dfa):
 
         # Si no hay estados alcanzables, la cadena no es válida
         if not current_states:
-            return False, path
+            return path, False
 
     # Verificar si alguno de los estados actuales es un estado de aceptación
-    is_accepted = any(state.endswith('*') for state in current_states)
+    is_accepted = any(state in dfa.accept for state in current_states)
     return  path, is_accepted
         
 

@@ -8,6 +8,7 @@ from ThompsonNFA.postfixer import shunting_yard
 
 # Function to convert build the NFA from the postfix expression by Thompson's construction
 from ThompsonNFA.construction import thompson
+from ThompsonNFA.mueve import route 
 
 # Function to convert the NFA to DFA by the subset construction method
 from DFNA.subsetmethod import subset
@@ -253,7 +254,7 @@ class EvaluateString(APIView):
                 schema=openapi.Schema(
                     type=openapi.TYPE_OBJECT,
                     properties={
-                        'paths': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Items(type=openapi.TYPE_STRING), description='Paths taken during evaluation.'),
+                        'paths': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Items(type=openapi.TYPE_OBJECT), description='Paths taken during evaluation.'),
                         'status': openapi.Schema(type=openapi.TYPE_BOOLEAN, description='Evaluation status (True/False).')
                     }
                 )
@@ -277,6 +278,7 @@ class EvaluateString(APIView):
         global optimizeddfa
         try:
             if method == 'thompson':
+                print(thompsonnfa.get_transition_table())
                 paths, status = evaluate_string(string, thompsonnfa)
             elif method == 'subset':
                 paths, status = evaluate_string_dfa(string, subsetdfna)

@@ -15,7 +15,6 @@ def afdOptimization(TranD, translated_subconjuntos,dfa, initial, accept = []):
     # Eliminar los estados equivalentes del DFA en la TranD y en el dfa
     todelete = []
     todeletedfa = []
-    print(equivalent_states)
     for label1, label2 in equivalent_states:
         for key, value in TranD.items():
             if value == label2:
@@ -29,10 +28,18 @@ def afdOptimization(TranD, translated_subconjuntos,dfa, initial, accept = []):
                 dfa.transitions[key] = label1
             if key[0] == label2:
                 todeletedfa.append(key)
+    
+    #quitar repetidos en todelete y todeletedfa
+    todelete = list(set(todelete))
+    todeletedfa = list(set(todeletedfa))
     for key in todelete:
         del TranD[key]
     for key in todeletedfa:
         del dfa.transitions[key]
 
+    dfa.set_accept(accept)
+    dfa.set_initial(initial)
+
+    dfa.set_transitions(TranD)
 
     return TranD, dfa, initial, accept
