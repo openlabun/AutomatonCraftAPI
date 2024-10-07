@@ -32,7 +32,7 @@ class NFA:
         # El estado inicial se numera como 0
         state_to_number[self.initial] = 0
         current_number = 1  # El siguiente número a asignar
-        
+        print(queue[0])
         # Mientras haya estados en la cola
         while queue:
             # Tomamos el estado actual de la cola
@@ -43,10 +43,9 @@ class NFA:
                 if state == current_state:  # Si la transición parte del estado actual
                     # Iteramos sobre los estados de destino (next_states puede ser una lista)
                     for next_state in next_states:
-                        # Verificar si el next_state es una lista y recorrerla si es el caso
-                        while isinstance(next_state, list):
-                            next_state = next_state[0]
                         if isinstance(next_state, list):
+                            while isinstance(next_state[0], list):
+                                next_state = next_state[0]
                             for state in next_state:
                                 if state not in state_to_number:
                                     state_to_number[state] = current_number
@@ -68,6 +67,10 @@ class NFA:
     def build_transition_table(self):
         # Obtener la enumeración de los estados
         self.state_to_number = self.ennunmerate_states()
+
+        #imprimir el diccionario de ennumeración
+        print(self.state_to_number)
+
         # Inicializar la tabla de transición
         transition_table = {}
         initial_state_num = self.state_to_number.get(self.initial)
@@ -81,9 +84,9 @@ class NFA:
 
             for next_state in next_states:
                 # Verificamos si next_state es una lista y manejamos cada uno
-                while isinstance(next_state, list):
-                            next_state = next_state[0]
                 if isinstance(next_state, list):
+                    while isinstance(next_state[0], list):
+                        next_state = next_state[0]
                     for sub_state in next_state:
                         next_state_num = self.state_to_number.get(sub_state)
                         if symbol in transition_table[current_state_num]:
@@ -103,6 +106,9 @@ class NFA:
                         # Si no existe la entrada, inicializamos la lista
                         transition_table[current_state_num][symbol] = [next_state_num]
         self.transition_table = transition_table
+        print(transition_table)
+        print(initial_state_num)
+        print(accept_state_num)
         return initial_state_num, accept_state_num
 
     
