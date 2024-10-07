@@ -36,16 +36,18 @@ def thompsonfunct(postfix, symbols):
     }), nfa
     
 def subsetfunct(nfa):
-    TranD, TranslatedSubset, TranslatedSubsetSignificantSates, dfa = subset(nfa)
+    TranD, TranslatedSubset, TranslatedSubsetSignificantSates, dfa, estadosA, estadosI = subset(nfa)
     # Convertir las claves de TranD de tuplas a cadenas
-    TranD_str = {f'{T}-{a}': U for (T, a), U in TranD.items()}
+    TranD_str = {f'{T}:({a},{U})' for (T, a), U in TranD.items()}
+    #Trand Json
     global subsetdfna
     subsetdfna = dfa
     return Response({
         'TranD': TranD_str,
         'States': TranslatedSubset,
-        'Significant_states': TranslatedSubsetSignificantSates
-    }),TranD, TranslatedSubset, dfa
+        'initial_state': estadosI,
+        'accept_states': estadosA,
+    }),TranD, TranslatedSubset, TranslatedSubsetSignificantSates, dfa, estadosA, estadosI
 
 
 class ValidateExpression(APIView):
@@ -149,9 +151,10 @@ class BuildSubsetDFA(APIView):
                 schema=openapi.Schema(
                     type=openapi.TYPE_OBJECT,
                     properties={
-                        'response': openapi.Schema(type=openapi.TYPE_OBJECT, description='Response of the DFA construction.'),
                         'TranD': openapi.Schema(type=openapi.TYPE_OBJECT, description='Transitions of the DFA.'),
                         'States': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Items(type=openapi.TYPE_STRING), description='States of the DFA.'),
+                        'initial_state': openapi.Schema(type=openapi.TYPE_STRING, description='Initial state of the DFA.'),
+                        'accept_states': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Items(type=openapi.TYPE_STRING), description='Accept states of the DFA.')
                     }
                 )
             ),
@@ -171,7 +174,7 @@ class BuildSubsetDFA(APIView):
         symbols = request.data['symbols']
         response, nfa = thompsonfunct(postfix, symbols)
         try:
-            response, TranD, States, dfa = subsetfunct(nfa)
+            response, TranD, States,StatesS, dfa, estadosA, estadosI= subsetfunct(nfa)
             return response
         except ValueError as e:
             return Response({
@@ -195,6 +198,9 @@ class OptimizeDFA(APIView):
                     type=openapi.TYPE_OBJECT,
                     properties={
                         'TranD': openapi.Schema(type=openapi.TYPE_OBJECT, description='Optimized transitions of the DFA.'),
+                        'States': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Items(type=openapi.TYPE_STRING), description='States of the DFA translated to the numbers.'),
+                        'initial_state': openapi.Schema(type=openapi.TYPE_STRING, description='Initial state of the DFA.'),
+                        'accept_states': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Items(type=openapi.TYPE_STRING), description='Accept states of the DFA.')
                     }
                 )
             ),
@@ -213,14 +219,19 @@ class OptimizeDFA(APIView):
         postfix = request.data['postfix']
         symbols = request.data['symbols']
         response, nfa = thompsonfunct(postfix, symbols)
-        response, TranD, States, dfa = subsetfunct(nfa)
+        response, TranD, States, StatesS, dfa, estadosA, estadosI = subsetfunct(nfa)
         try:
-            TranD, AFD = afdOptimization(TranD, States,dfa)
+            print(estadosA)
+            print(estadosI)
+            TranD, AFD, initial, accept = afdOptimization(TranD, StatesS,dfa, estadosI, estadosA)
             global optimizeddfa
             optimizeddfa = AFD
-            TranD_str = {f'{T}-{a}': U for (T, a), U in TranD.items()}
+            TranD_str = {f'{T}:({a},{U})' for (T, a), U in TranD.items()}
             return Response({
-                'TranD': TranD_str
+                'TranD': TranD_str,
+                'States': StatesS,
+                'initial_state': initial,
+                'accept_states': accept
             })
         except ValueError as e:
             return Response({

@@ -1,6 +1,6 @@
 from ThompsonNFA.nfa import evaluate_string_dfa
 
-def afdOptimization(TranD, translated_subconjuntos,dfa):
+def afdOptimization(TranD, translated_subconjuntos,dfa, initial, accept = []):
     # Optimización del DFA
     # Se eliminan los estados equivalentes
 
@@ -15,11 +15,14 @@ def afdOptimization(TranD, translated_subconjuntos,dfa):
     # Eliminar los estados equivalentes del DFA en la TranD y en el dfa
     todelete = []
     todeletedfa = []
+    print(equivalent_states)
     for label1, label2 in equivalent_states:
         for key, value in TranD.items():
             if value == label2:
                 TranD[key] = label1
             if key[0] == label2:
+                if key[0] in accept:
+                    accept.remove(key[0])
                 todelete.append(key)
         for key, value in dfa.transitions.items():
             if value == label2:
@@ -32,4 +35,4 @@ def afdOptimization(TranD, translated_subconjuntos,dfa):
         del dfa.transitions[key]
 
 
-    return TranD, dfa
+    return TranD, dfa, initial, accept

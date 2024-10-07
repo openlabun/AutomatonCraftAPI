@@ -21,7 +21,14 @@ def clousureE(estado, nfa):
         # Si el símbolo es "&", seguimos buscando más transiciones epsilon
         if symbol == '&':
             for next_state in nextStates:
-                if next_state not in estados_cerradura:
+                if isinstance(next_state, list):
+                    while isinstance(next_state[0], list):
+                        next_state = next_state[0]
+                    for i in next_state:
+                        if i not in estados_cerradura:
+                            estados_cerradura.add(i)
+                            stack.append(i)
+                elif next_state not in estados_cerradura:
                     estados_cerradura.add(next_state)
                     stack.append(next_state)
 
@@ -58,6 +65,8 @@ def subset_construction(nfa):
     TranD = {}     # Transiciones DFA como diccionario
     Subconjuntos = {}  # Para almacenar los subconjuntos de cada estado
     SubconjuntosEstadosSignificativos = {}  # Para almacenar los subconjuntos de estados significativos de cada estado 
+    estadosA = []
+    estadosI = []
 
     # Agregamos la cerradura epsilon del estado inicial del NFA
     initial_closure = tuple(clousureE(nfa.initial, nfa))  # Convertimos a tupla para usarlo en comparaciones
@@ -69,13 +78,18 @@ def subset_construction(nfa):
     # Mapa para los labels
     state_labels = {}
     label_counter = 0
+    if nfa.accept in initial_closure:
+        estadosA.append(chr(65 + label_counter))
+    if nfa.initial in initial_closure:
+        estadosI.append(chr(65 + label_counter))
+    
 
     while pending_states:
         T = pending_states.pop(0)  # Sacamos el siguiente conjunto de estados por procesar
         
         # Asignar un label a T si no tiene uno
         if T not in state_labels:
-            state_labels[T] = chr(65 + label_counter) + '->'  # 65 es el código ASCII para 'A'
+            state_labels[T] = chr(65 + label_counter)  # 65 es el código ASCII para 'A'
             initial=state_labels[T]
             label_counter += 1
         
@@ -89,7 +103,6 @@ def subset_construction(nfa):
         # Guardar el subconjunto correspondiente al estado
         Subconjuntos[state_labels[T]] = T
         SubconjuntosEstadosSignificativos[state_labels[T]] = TSignificativos
-        
 
         for a in nfa.alphabet:  # Iteramos sobre el alfabeto del NFA
             U = tuple(setClousureE(move(T, a, nfa), nfa))  # Calculamos la cerradura epsilon del conjunto U
@@ -106,8 +119,9 @@ def subset_construction(nfa):
 
                 #Marcar el estado si es final con un *
                 if nfa.accept in U:
-                    state_labels[U] = state_labels[U] + '*'
-                    accept= state_labels[U]
+                    state_labels[U] = state_labels[U]
+                    accept = state_labels[U]
+                    estadosA.append(state_labels[U])
             
             # Agregamos la transición al DFA
             if U:
@@ -119,20 +133,20 @@ def subset_construction(nfa):
         if value:
             dfa.add_transition(key[0], key[1], value)
 
-    return EstadosD, TranD, Subconjuntos, SubconjuntosEstadosSignificativos, dfa
+    
+    return EstadosD, TranD, Subconjuntos, SubconjuntosEstadosSignificativos, dfa, estadosA, estadosI
 
 def subset(nfa):
-    EstadosD, TranD, Subconjuntos, SubconjuntosEstadosSignificativos, dfa = subset_construction(nfa)
+    EstadosD, TranD, Subconjuntos, SubconjuntosEstadosSignificativos, dfa, estadosA, estadosI = subset_construction(nfa)
     # Traducir los estados en Subconjuntos
     translated_subconjuntos = {}
     for label, estados in Subconjuntos.items():
         translated_states = [nfa.state_to_number.get(state, -1) for state in estados]
         translated_subconjuntos[label] = translated_states
     # Traducir los estados en Subconjuntos
-    
     translated_subconjuntos2 = {}
     for label, estados in SubconjuntosEstadosSignificativos.items():
         translated_states = [nfa.state_to_number.get(state, -1) for state in estados]
         translated_subconjuntos2[label] = translated_states
-    return TranD, translated_subconjuntos, translated_subconjuntos2, dfa
+    return TranD, translated_subconjuntos, translated_subconjuntos2, dfa, estadosA, estadosI
 
