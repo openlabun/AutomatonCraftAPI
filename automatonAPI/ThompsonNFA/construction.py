@@ -48,7 +48,7 @@ from ThompsonNFA.nfa import basic_nfa, union_nfa, concat_nfa, kleene_nfa, positi
 def thompson(postfix):
     stack = []
     for c in postfix:
-        if c.isalpha():
+        if c.isalpha() or c.isdigit():
             nfa = basic_nfa(object(),object())
             nfa.add_transition(nfa.initial, c, nfa.accept)
             stack.append(nfa)
