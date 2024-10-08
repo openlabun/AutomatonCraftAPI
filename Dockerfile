@@ -19,5 +19,5 @@ EXPOSE 5020
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-# Correr las migraciones de la base de datos y lanzar el servidor
+# Correr lanzar el servidor
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
