@@ -239,13 +239,17 @@ def evaluate_string_dfa(input_string, dfa):
 
     for symbol in input_string:
         next_states = []  # Lista para almacenar los próximos estados
+        if symbol == "&":
+            path.append(current_states)  # Almacenar el camino
+            continue
 
         for state in current_states:
             # Obtener las transiciones para el estado actual y el símbolo
             for (state_key, transition_symbol), next_state_list in transitions.items():
-                if state_key == state and transition_symbol == symbol:
+                if state_key == state and (transition_symbol == symbol):
                     next_states.extend(next_state_list)
-                    path.append((state, transition_symbol, next_state_list))  # Almacenar el camino
+                    path.append(state)  # Almacenar el camino
+                
 
         current_states = next_states  # Actualizar los estados actuales
 
@@ -254,8 +258,12 @@ def evaluate_string_dfa(input_string, dfa):
             return path, False
 
     # Verificar si alguno de los estados actuales es un estado de aceptación
+    print(f"Estados actuales: {current_states}")
+    for state in current_states:
+        print(f"Estado: {state}")
+        print(f"Estados de aceptación: {dfa.accept}")
     is_accepted = any(state in dfa.accept for state in current_states)
-    return  path, is_accepted
+    return path, is_accepted
         
 
 

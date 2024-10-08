@@ -131,7 +131,7 @@ def subset_construction(nfa):
                 TranD[(state_labels[T], a)] = state_labels.get(U, None)
         
     #Build new Graph with the new 
-    dfa = NFA(initial,accept)
+    dfa = NFA(estadosI,estadosA)
     for key, value in TranD.items():
         if value:
             if isinstance(value, list):
