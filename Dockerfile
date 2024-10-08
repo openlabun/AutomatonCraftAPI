@@ -13,7 +13,7 @@ RUN pip install -r requirements.txt
 
 
 # Exponer el puerto 5020
-EXPOSE 5020
+EXPOSE 5020 8000
 
 # Configurar variables de entorno
 ENV PYTHONDONTWRITEBYTECODE 1
