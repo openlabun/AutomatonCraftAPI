@@ -171,12 +171,21 @@ def route(string, state, nfa, path=None, all_paths=None):
     print(f"Estado actual: {state}, Símbolo: {symbol}, Próximos estados: {next_states}")
     # Procesar transiciones epsilon (símbolo "&")
     if symbol == "&":
-        for next_state in next_states:
-            if isinstance(next_state, list):
-                for state in next_state:
-                    all_paths = route(string[:], state, nfa, path.copy(), all_paths)  # Copia el camino
-            else:
-                all_paths = route(string[:], next_state, nfa, path.copy(), all_paths)  # Copia el camino
+        if string[0] == "&":
+            for next_state in next_states:
+                if isinstance(next_state, list):
+                    next_state = next_state[0]
+                # Consumir el símbolo y moverse al siguiente estado
+                new_string = string.copy()  # Copia la cadena
+                new_string.pop(0)
+                all_paths = route(new_string, next_state, nfa, path.copy(), all_paths)  # Avanzar en la cadena
+        else:
+            for next_state in next_states:
+                if isinstance(next_state, list):
+                    for state in next_state:
+                        all_paths = route(string[:], state, nfa, path.copy(), all_paths)  # Copia el camino
+                else:
+                    all_paths = route(string[:], next_state, nfa, path.copy(), all_paths)  # Copia el camino
     
     # Procesar transiciones normales, coincidiendo el símbolo
     elif string and string[0] == symbol:
@@ -344,5 +353,4 @@ def optional_nfa(nfa):
     nfa.initial = initial
     nfa.accept = accept
     return nfa
-
 
