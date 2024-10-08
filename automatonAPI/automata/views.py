@@ -9,7 +9,6 @@ from ThompsonNFA.postfixer import shunting_yard
 
 # Function to convert build the NFA from the postfix expression by Thompson's construction
 from ThompsonNFA.construction import thompson
-from ThompsonNFA.mueve import route 
 
 # Function to convert the NFA to DFA by the subset construction method
 from DFNA.subsetmethod import subset
