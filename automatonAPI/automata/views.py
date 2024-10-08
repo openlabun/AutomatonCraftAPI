@@ -2,6 +2,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from rest_framework.permissions import AllowAny
 
 # Funtion to convert infix to postfix
 from ThompsonNFA.postfixer import shunting_yard
@@ -81,6 +82,7 @@ class ValidateExpression(APIView):
             ),
         }
     )
+    permission_classes = [AllowAny]
     def post(self, request):
         expression = request.data['expression']
         try:
@@ -127,6 +129,7 @@ class BuildThompsonNFA(APIView):
             ),
         }
     )
+    permission_classes = [AllowAny]
     def post(self, request):
         postfix = request.data['postfix']
         symbols = request.data['symbols']
@@ -172,6 +175,7 @@ class BuildSubsetDFA(APIView):
             ),
         }
     )
+    permission_classes = [AllowAny]
     def post(self, request):
         postfix = request.data['postfix']
         symbols = request.data['symbols']
@@ -218,6 +222,7 @@ class OptimizeDFA(APIView):
             ),
         }
     )
+    permission_classes = [AllowAny]
     def post(self, request):
         postfix = request.data['postfix']
         symbols = request.data['symbols']
@@ -270,6 +275,7 @@ class EvaluateString(APIView):
             ),
         }
     )
+    permission_classes = [AllowAny]
     def post(self, request):
         string = list(request.data['string'])
         method = request.data['method']
