@@ -248,7 +248,10 @@ def evaluate_string_dfa(input_string, dfa):
             for (state_key, transition_symbol), next_state_list in transitions.items():
                 if state_key == state and (transition_symbol == symbol):
                     next_states.extend(next_state_list)
-                    path.append([state,transition_symbol,next_state_list[0]])  # Almacenar el camino
+                    if isinstance(next_state_list, list):
+                        path.append([state,transition_symbol,next_state_list[0]])  # Almacenar el camino
+                    else:
+                        path.append([state,transition_symbol,next_state_list])
                 
 
         current_states = next_states  # Actualizar los estados actuales
