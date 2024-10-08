@@ -2,6 +2,8 @@ from collections import deque
 import json
 
 # Define the NFA class
+
+
 class NFA:
     def __init__(self, initial, accept):
         self.initial = initial
@@ -15,7 +17,7 @@ class NFA:
         if (state, symbol) not in self.transitions:
             self.transitions[(state, symbol)] = []
         self.transitions[(state, symbol)].append(next_state)
-    
+
     def set_initial(self, initial):
         self.initial = initial
 
@@ -28,10 +30,10 @@ class NFA:
     def ennunmerate_states(self):
         # Diccionario para almacenar el número asignado a cada estado
         state_to_number = {}
-        
+
         # Cola para realizar el recorrido BFS
         queue = deque([self.initial])
-        
+
         # El estado inicial se numera como 0
         state_to_number[self.initial] = 0
         current_number = 1  # El siguiente número a asignar
@@ -39,7 +41,7 @@ class NFA:
         while queue:
             # Tomamos el estado actual de la cola
             current_state = queue.popleft()
-            
+
             # Recorremos todas las transiciones desde este estado
             for (state, symbol), next_states in self.transitions.items():
                 if state == current_state:  # Si la transición parte del estado actual
@@ -52,20 +54,22 @@ class NFA:
                                 if state not in state_to_number:
                                     state_to_number[state] = current_number
                                     current_number += 1
-                                    queue.append(state)  # Agregamos el estado a la cola para seguir explorando
+                                    # Agregamos el estado a la cola para seguir explorando
+                                    queue.append(state)
                         else:
                             # Si next_state no es una lista, lo tratamos como un estado individual
                             if next_state not in state_to_number:
                                 state_to_number[next_state] = current_number
                                 current_number += 1
-                                queue.append(next_state)  # Agregamos el estado a la cola
-        
+                                # Agregamos el estado a la cola
+                                queue.append(next_state)
+
         # Verificamos que el estado de aceptación también tenga un número
         if self.accept not in state_to_number:
             state_to_number[self.accept] = current_number
 
         return state_to_number
-    
+
     def build_transition_table(self):
         # Obtener la enumeración de los estados
         self.state_to_number = self.ennunmerate_states()
@@ -74,10 +78,10 @@ class NFA:
         transition_table = {}
         initial_state_num = self.state_to_number.get(self.initial)
         accept_state_num = self.state_to_number.get(self.accept)
-        
+
         for (state, symbol), next_states in self.transitions.items():
             current_state_num = self.state_to_number.get(state)
-            
+
             if current_state_num not in transition_table:
                 transition_table[current_state_num] = {}
 
@@ -91,24 +95,28 @@ class NFA:
                         if symbol in transition_table[current_state_num]:
                             # Si ya existe la entrada para este símbolo, agregamos el estado a la lista
                             if next_state_num not in transition_table[current_state_num][symbol]:
-                                transition_table[current_state_num][symbol].append(next_state_num)
+                                transition_table[current_state_num][symbol].append(
+                                    next_state_num)
                         else:
                             # Si no existe la entrada, inicializamos la lista
-                            transition_table[current_state_num][symbol] = [next_state_num]
+                            transition_table[current_state_num][symbol] = [
+                                next_state_num]
                 else:
                     next_state_num = self.state_to_number.get(next_state)
                     if symbol in transition_table[current_state_num]:
                         # Si ya existe la entrada para este símbolo, agregamos el estado a la lista
                         if next_state_num not in transition_table[current_state_num][symbol]:
-                            transition_table[current_state_num][symbol].append(next_state_num)
+                            transition_table[current_state_num][symbol].append(
+                                next_state_num)
                     else:
                         # Si no existe la entrada, inicializamos la lista
-                        transition_table[current_state_num][symbol] = [next_state_num]
+                        transition_table[current_state_num][symbol] = [
+                            next_state_num]
         self.transition_table = transition_table
         return initial_state_num, accept_state_num
 
-    
     # Print the transition table
+
     def print_transition_table(self):
         for state, transitions in self.transition_table.items():
             print(f"State {state}: {transitions}")
@@ -116,7 +124,7 @@ class NFA:
     def get_transition_table(self):
         # Inicializar un diccionario para la tabla de transiciones
         transition_table_json = {}
-        
+
         # Construir el diccionario para JSON
         for current_state, transitions in self.transition_table.items():
             transition_table_json[current_state] = {}
@@ -125,22 +133,22 @@ class NFA:
 
         # Convertir el diccionario a JSON
         return transition_table_json
-            
-    
-    def get_transitions_by_state(self,state):
+
+    def get_transitions_by_state(self, state):
         if state == self.accept:
             return None, self.accept
         for (s, symbol), next_states in self.transitions.items():
             if s == state:
                 return symbol, next_states
         return None, []  # Si no se encuentra el estado
-    
+
     # From number to state
     def get_state_by_number(self, number):
         for state, num in self.state_to_number.items():
             if num == number:
                 return state
         return None
+
 
 def route(string, state, nfa, path=None, all_paths=None):
     if path is None:
@@ -156,7 +164,7 @@ def route(string, state, nfa, path=None, all_paths=None):
     if state == nfa.accept and not string:
         all_paths.append((path.copy(), True))  # Añadir camino aceptado
         return all_paths
-    
+
     # Obtener el símbolo y los próximos estados desde la transición actual
     transition = nfa.get_transitions_by_state(state)
     if transition is None:
@@ -168,25 +176,30 @@ def route(string, state, nfa, path=None, all_paths=None):
     if isinstance(next_states, list):
         while isinstance(next_states[0], list):
             next_states = next_states[0]
-    print(f"Estado actual: {state}, Símbolo: {symbol}, Próximos estados: {next_states}")
+    print(
+        f"Estado actual: {state}, Símbolo: {symbol}, Próximos estados: {next_states}")
     # Procesar transiciones epsilon (símbolo "&")
+    if string and symbol == "&" and string[0] == "&":
+        for next_state in next_states:
+            if isinstance(next_state, list):
+                next_state = next_state[0]
+            # Consumir el símbolo y moverse al siguiente estado
+            new_string = string.copy()  # Copia la cadena
+            new_string.pop(0)
+            all_paths = route(new_string, next_state, nfa,
+            path.copy(), all_paths)  # Avanzar en la cadena
     if symbol == "&":
-        if string[0] == "&":
-            for next_state in next_states:
-                if isinstance(next_state, list):
-                    next_state = next_state[0]
-                # Consumir el símbolo y moverse al siguiente estado
-                new_string = string.copy()  # Copia la cadena
-                new_string.pop(0)
-                all_paths = route(new_string, next_state, nfa, path.copy(), all_paths)  # Avanzar en la cadena
-        else:
-            for next_state in next_states:
-                if isinstance(next_state, list):
-                    for state in next_state:
-                        all_paths = route(string[:], state, nfa, path.copy(), all_paths)  # Copia el camino
-                else:
-                    all_paths = route(string[:], next_state, nfa, path.copy(), all_paths)  # Copia el camino
-    
+        for next_state in next_states:
+            if isinstance(next_state, list):
+                for state in next_state:
+                    # Copia el camino
+                    all_paths = route(
+                        string[:], state, nfa, path.copy(), all_paths)
+            else:
+                # Copia el camino
+                all_paths = route(string[:], next_state,
+                nfa, path.copy(), all_paths)
+
     # Procesar transiciones normales, coincidiendo el símbolo
     elif string and string[0] == symbol:
         for next_state in next_states:
@@ -195,24 +208,25 @@ def route(string, state, nfa, path=None, all_paths=None):
             # Consumir el símbolo y moverse al siguiente estado
             new_string = string.copy()  # Copia la cadena
             new_string.pop(0)
-            all_paths = route(new_string, next_state, nfa, path.copy(), all_paths)  # Avanzar en la cadena
-    
+            all_paths = route(new_string, next_state, nfa,
+            path.copy(), all_paths)  # Avanzar en la cadena
+
     # Si no hay coincidencias o transiciones
     if string or symbol != "&":
-        all_paths.append((path.copy(), False))  # Añadir camino no aceptado solo al final
+        # Añadir camino no aceptado solo al final
+        all_paths.append((path.copy(), False))
     return all_paths  # Retornar todos los caminos
-
 
 
 def evaluate_string(string, nfa):
     caminos = route(string, nfa.initial, nfa)
     state_to_number = nfa.state_to_number
     status = "Rechazada"
-    caminoA=[]
+    caminoA = []
     for camino, aceptado in caminos:
         if aceptado:
             status = "Aceptada"
-        caminoA=[]
+        caminoA = []
         for state in camino:
             if isinstance(state, list):
                 while isinstance(state[0], list):
@@ -222,8 +236,8 @@ def evaluate_string(string, nfa):
                 caminoA.append(state_to_number[state])
         print(f"Camino: {caminoA}, Aceptado: {aceptado}")
         camino = [state for state in caminoA]
-    
-    #ToJSON
+
+    # ToJSON
     json_caminos = []
     caminoB = []
     for camino, aceptado in caminos:
@@ -237,8 +251,9 @@ def evaluate_string(string, nfa):
                 caminoB.append(state_to_number[state])
         camino = [state for state in caminoB]
         json_caminos.append({"camino": camino, "aceptado": aceptado})
-    
+
     return json_caminos, status
+
 
 def evaluate_string_dfa(input_string, dfa):
     transitions = dfa.transitions
@@ -258,10 +273,12 @@ def evaluate_string_dfa(input_string, dfa):
                 if state_key == state and (transition_symbol == symbol):
                     next_states.extend(next_state_list)
                     if isinstance(next_state_list, list):
-                        path.append([state,transition_symbol,next_state_list[0]])  # Almacenar el camino
+                        # Almacenar el camino
+                        path.append(
+                            [state, transition_symbol, next_state_list[0]])
                     else:
-                        path.append([state,transition_symbol,next_state_list])
-                
+                        path.append(
+                            [state, transition_symbol, next_state_list])
 
         current_states = next_states  # Actualizar los estados actuales
 
@@ -276,9 +293,6 @@ def evaluate_string_dfa(input_string, dfa):
         print(f"Estados de aceptación: {dfa.accept}")
     is_accepted = any(state in dfa.accept for state in current_states)
     return path, is_accepted
-        
-
-
 
 
 # Functions to create basic NFA fragments
@@ -293,6 +307,8 @@ def basic_nfa(initial, accept):
 # Functions to create NFA fragments for operators
 
 # Rule #3: Union expression
+
+
 def union_nfa(nfa1, nfa2):
     initial = object()
     accept = object()
@@ -308,19 +324,23 @@ def union_nfa(nfa1, nfa2):
     return nfa
 
 # Rule #4: Concatenation expression
+
+
 def concat_nfa(nfa1, nfa2):
-    symbolns2,next_states2 = nfa2.get_transitions_by_state(nfa2.initial)
+    symbolns2, next_states2 = nfa2.get_transitions_by_state(nfa2.initial)
     for next_state in next_states2:
         nfa1.add_transition(nfa1.accept, symbolns2, next_state)
 
     for (state, symbol), next_states in nfa2.transitions.items():
-        #Only if the state is not the initial state
+        # Only if the state is not the initial state
         if state != nfa2.initial:
             nfa1.add_transition(state, symbol, next_states)
     nfa1.accept = nfa2.accept
     return nfa1
 
 # Rule #5: Kleene star expression
+
+
 def kleene_nfa(nfa):
     initial = object()
     accept = object()
@@ -333,6 +353,8 @@ def kleene_nfa(nfa):
     return nfa
 
 # Rule #6: Positive closure expression
+
+
 def positive_nfa(nfa):
     initial = object()
     accept = object()
@@ -344,6 +366,8 @@ def positive_nfa(nfa):
     return nfa
 
 # Rule #7: Optional expression
+
+
 def optional_nfa(nfa):
     initial = object()
     accept = object()
@@ -353,4 +377,3 @@ def optional_nfa(nfa):
     nfa.initial = initial
     nfa.accept = accept
     return nfa
-
