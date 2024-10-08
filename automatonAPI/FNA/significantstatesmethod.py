@@ -8,7 +8,7 @@ def afdOptimization(TranD, translated_subconjuntos,dfa, initial, accept = []):
     equivalent_states = []
     for label1, estados1 in translated_subconjuntos.items():
         for label2, estados2 in translated_subconjuntos.items():
-            if label1 != label2 and estados1 == estados2:
+            if label1 != label2 and sorted(estados1) == sorted(estados2):
                 if (label2, label1) not in equivalent_states:
                     equivalent_states.append((label1, label2))
 
