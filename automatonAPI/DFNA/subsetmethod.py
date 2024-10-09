@@ -42,7 +42,7 @@ def setClousureE(moveList, nfa):
             clousure.add(i)
     return clousure
 
-def move(T, a, nfa):
+def move(T, a, nfa, switch=False):
     """Calcula el conjunto de estados a los que se puede llegar desde cualquier estado en T con el símbolo a"""
     # Usamos un conjunto para evitar duplicados
     move_set = set()
@@ -51,6 +51,8 @@ def move(T, a, nfa):
     for state in T:
         # Revisamos todas las transiciones desde el estado actual
         for (current_state, symbol), next_states in nfa.transitions.items():
+            if symbol == "&" and switch:
+                continue
             if current_state == state and symbol == a:
                 # Si el símbolo coincide con 'a', añadimos los estados alcanzables al conjunto
                 for next_state in next_states:
@@ -108,7 +110,7 @@ def subset_construction(nfa):
         SubconjuntosEstadosSignificativos[state_labels[T]] = TSignificativos
 
         for a in nfa.alphabet:  # Iteramos sobre el alfabeto del NFA
-            U = tuple(setClousureE(move(T, a, nfa), nfa))  # Calculamos la cerradura epsilon del conjunto U
+            U = tuple(setClousureE(move(T, a, nfa,switch=True), nfa))  # Calculamos la cerradura epsilon del conjunto U
 
             
             # Si el conjunto U no es vacío y no está en EstadosD, lo agregamos
@@ -156,4 +158,3 @@ def subset(nfa):
         translated_states = [nfa.state_to_number.get(state, -1) for state in estados]
         translated_subconjuntos2[label] = translated_states
     return TranD, translated_subconjuntos, translated_subconjuntos2, dfa, estadosA, estadosI
-
