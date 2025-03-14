@@ -29,8 +29,8 @@ jobs:
           cd /home/proyecto/AutomatonCraftAPI/|
           git pull origin main
           git status
-          docker stop automatonapi-app
-          docker rm automatonapi-app
+          docker stop automatonapi
+          docker rm automatonapi
           docker build -f Dockerfile -t automatonapi-image .
           docker run -d -it -p 5020:8000 --restart unless-stopped --name automatonapi automatonapi-image
           
