@@ -33,3 +33,4 @@ jobs:
           docker rm automatonapi-app
           docker build -f Dockerfile -t automatonapi-image .
           docker run -d -it -p 5020:8000 --restart unless-stopped --name automatonapi automatonapi-image
+          
